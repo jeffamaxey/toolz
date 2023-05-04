@@ -158,9 +158,7 @@ class InstanceProperty(property):
         property.__init__(self, fget=fget, fset=fset, fdel=fdel, doc=doc)
 
     def __get__(self, obj, type=None):
-        if obj is None:
-            return self.classval
-        return property.__get__(self, obj, type)
+        return self.classval if obj is None else property.__get__(self, obj, type)
 
     def __reduce__(self):
         state = (self.fget, self.fset, self.fdel, self.__doc__, self.classval)
@@ -211,7 +209,7 @@ class curry(object):
         ):
             _kwargs = {}
             if func.keywords:
-                _kwargs.update(func.keywords)
+                _kwargs |= func.keywords
             _kwargs.update(kwargs)
             kwargs = _kwargs
             args = func.args + args
@@ -342,9 +340,7 @@ class curry(object):
         return self._partial(*args, **kwargs)
 
     def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        return curry(self, instance)
+        return self if instance is None else curry(self, instance)
 
     def __reduce__(self):
         func = self.func
@@ -367,7 +363,7 @@ class curry(object):
             if isinstance(obj, curry) and obj.func is func:
                 is_decorated = obj is self
                 qualname = '.'.join(attrs)
-                func = '%s:%s' % (modname, qualname)
+                func = f'{modname}:{qualname}'
 
         # functools.partial objects can't be pickled
         userdict = tuple((k, v) for k, v in self.__dict__.items()
@@ -502,11 +498,11 @@ class Compose(object):
         def composed_doc(*fs):
             """Generate a docstring for the composition of fs.
             """
-            if not fs:
-                # Argument name for the docstring.
-                return '*args, **kwargs'
-
-            return '{f}({g})'.format(f=fs[0].__name__, g=composed_doc(*fs[1:]))
+            return (
+                '{f}({g})'.format(f=fs[0].__name__, g=composed_doc(*fs[1:]))
+                if fs
+                else '*args, **kwargs'
+            )
 
         try:
             return (
@@ -579,10 +575,7 @@ def compose(*funcs):
     """
     if not funcs:
         return identity
-    if len(funcs) == 1:
-        return funcs[0]
-    else:
-        return Compose(funcs)
+    return funcs[0] if len(funcs) == 1 else Compose(funcs)
 
 
 def compose_left(*funcs):
@@ -782,13 +775,11 @@ class excepts(object):
     def __doc__(self):
         exc = self.exc
         try:
-            if isinstance(exc, tuple):
-                exc_name = '(%s)' % ', '.join(
-                    map(attrgetter('__name__'), exc),
-                )
-            else:
-                exc_name = exc.__name__
-
+            exc_name = (
+                f"({', '.join(map(attrgetter('__name__'), exc))})"
+                if isinstance(exc, tuple)
+                else exc.__name__
+            )
             return dedent(
                 """\
                 A wrapper around {inst.func.__name__!r} that will except:
@@ -816,7 +807,7 @@ class excepts(object):
                 exc_name = '_or_'.join(map(attrgetter('__name__'), exc))
             else:
                 exc_name = exc.__name__
-            return '%s_excepting_%s' % (self.func.__name__, exc_name)
+            return f'{self.func.__name__}_excepting_{exc_name}'
         except AttributeError:
             return 'excepting'
 
@@ -939,12 +930,10 @@ def is_arity(n, func, sigspec=None):
     varargs = has_varargs(func, sigspec)
     if varargs:
         return False
-    keywords = has_keywords(func, sigspec)
-    if keywords:
+    if keywords := has_keywords(func, sigspec):
         return False
-    if num is None or varargs is None or keywords is None:  # pragma: no cover
-        return None
-    return True
+    else:
+        return None if num is None or varargs is None or keywords is None else True
 
 
 num_required_args.__doc__ = """ \

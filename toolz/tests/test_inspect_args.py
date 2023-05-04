@@ -12,7 +12,7 @@ from toolz.utils import raises
 
 def make_func(param_string, raise_if_called=True):
     if not param_string.startswith('('):
-        param_string = '(%s)' % param_string
+        param_string = f'({param_string})'
     if raise_if_called:
         body = 'raise ValueError("function should not be called")'
     else:
@@ -211,9 +211,7 @@ def test_is_valid_curry():
             curry(func, *args)(**kwargs)
             curry(func, **kwargs)(*args)
             curry(func, *args, **kwargs)()
-            if not isinstance(func, type(lambda: None)):
-                return None
-            return incomplete
+            return incomplete if isinstance(func, type(lambda: None)) else None
         except ValueError:
             return True
         except TypeError:

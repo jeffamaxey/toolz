@@ -6,7 +6,7 @@
 def fib(n):
     """ Imperative definition of Fibonacci numbers """
     a, b = 0, 1
-    for i in range(n):
+    for _ in range(n):
         a, b = b, a + b
     return a
 
@@ -14,10 +14,7 @@ def fib(n):
 # This is intuitive but VERY slow
 def fib(n):
     """ Functional definition of Fibonacci numbers """
-    if n == 0 or n == 1:
-        return n
-    else:
-        return fib(n - 1) + fib(n - 2)
+    return n if n in [0, 1] else fib(n - 1) + fib(n - 2)
 
 from toolz import memoize
 

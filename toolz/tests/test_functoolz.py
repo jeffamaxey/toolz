@@ -333,6 +333,7 @@ def test_curry_module():
 def test_curry_comparable():
     def foo(a, b, c=1):
         return a + b + c
+
     f1 = curry(foo, 1, c=2)
     f2 = curry(foo, 1, c=2)
     g1 = curry(foo, 1, c=3)
@@ -340,9 +341,9 @@ def test_curry_comparable():
     h2 = h1(c=2)
     h3 = h1()
     assert f1 == f2
-    assert not (f1 != f2)
+    assert f1 == f2
     assert f1 != g1
-    assert not (f1 == g1)
+    assert f1 != g1
     assert f1 != h1
     assert h1 == h2
     assert h1 == h3
@@ -350,6 +351,7 @@ def test_curry_comparable():
     # test function comparison works
     def bar(a, b, c=1):
         return a + b + c
+
     b1 = curry(bar, 1, c=2)
     assert b1 != f1
 
@@ -595,15 +597,15 @@ def test_compose_metadata():
 
     assert composed == compose(f, h)
     assert composed == AlwaysEquals()
-    assert not composed == compose(h, f)
-    assert not composed == object()
-    assert not composed == NeverEquals()
+    assert composed != compose(h, f)
+    assert composed != object()
+    assert composed != NeverEquals()
 
     assert composed != compose(h, f)
     assert composed != NeverEquals()
     assert composed != object()
-    assert not composed != compose(f, h)
-    assert not composed != AlwaysEquals()
+    assert composed == compose(f, h)
+    assert composed == AlwaysEquals()
 
     assert hash(composed) == hash(compose(f, h))
     assert hash(composed) != hash(compose(h, f))

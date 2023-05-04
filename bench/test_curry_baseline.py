@@ -2,7 +2,7 @@ from toolz import get
 from functools import partial
 
 
-pairs = [(1, 2) for i in range(100000)]
+pairs = [(1, 2) for _ in range(100000)]
 
 
 def test_get():

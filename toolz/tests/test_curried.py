@@ -57,9 +57,7 @@ def test_curried_operator():
                     pass
                 else:
                     continue
-                raise AssertionError(
-                    'toolz.curried.operator.%s is not curried!' % k,
-                )
+                raise AssertionError(f'toolz.curried.operator.{k} is not curried!')
 
     # Make sure this isn't totally empty.
     assert len(set(vars(cop)) & {'add', 'sub', 'mul'}) == 3
@@ -105,9 +103,9 @@ def test_curried_namespace():
         messages = []
         for name, (orig_func, auto_func) in sorted(unequal.items()):
             if name in from_exceptions:
-                messages.append('%s should come from toolz.curried.exceptions' % name)
+                messages.append(f'{name} should come from toolz.curried.exceptions')
             elif should_curry(getattr(toolz, name)):
-                messages.append('%s should be curried from toolz' % name)
+                messages.append(f'{name} should be curried from toolz')
             else:
-                messages.append('%s should come from toolz and NOT be curried' % name)
+                messages.append(f'{name} should come from toolz and NOT be curried')
         raise AssertionError('\n'.join(messages))

@@ -85,7 +85,7 @@ def test_merge_sorted():
             [(9, 1), (9, 8), (9, 9)]]
     assert list(merge_sorted(*data, key=lambda x: x[1])) == [
         (9, 1), (1, 2), (5, 3), (0, 4), (6, 5), (3, 6), (8, 8), (9, 8), (9, 9)]
-    assert list(merge_sorted()) == []
+    assert not list(merge_sorted())
     assert list(merge_sorted([1, 2, 3])) == [1, 2, 3]
     assert list(merge_sorted([1, 4, 5], [2, 3])) == [1, 2, 3, 4, 5]
     assert list(merge_sorted([1, 4, 5], [2, 3], key=identity)) == [
@@ -152,23 +152,23 @@ def test_last():
 
 def test_rest():
     assert list(rest('ABCDE')) == list('BCDE')
-    assert list(rest((3, 2, 1))) == list((2, 1))
+    assert list(rest((3, 2, 1))) == [2, 1]
 
 
 def test_take():
     assert list(take(3, 'ABCDE')) == list('ABC')
-    assert list(take(2, (3, 2, 1))) == list((3, 2))
+    assert list(take(2, (3, 2, 1))) == [3, 2]
 
 
 def test_tail():
     assert list(tail(3, 'ABCDE')) == list('CDE')
     assert list(tail(3, iter('ABCDE'))) == list('CDE')
-    assert list(tail(2, (3, 2, 1))) == list((2, 1))
+    assert list(tail(2, (3, 2, 1))) == [2, 1]
 
 
 def test_drop():
     assert list(drop(3, 'ABCDE')) == list('DE')
-    assert list(drop(1, (3, 2, 1))) == list((2, 1))
+    assert list(drop(1, (3, 2, 1))) == [2, 1]
 
 
 def test_take_nth():
@@ -212,13 +212,13 @@ def test_cons():
 
 
 def test_concat():
-    assert list(concat([[], [], []])) == []
+    assert not list(concat([[], [], []]))
     assert (list(take(5, concat([['a', 'b'], range(1000000000)]))) ==
             ['a', 'b', 0, 1, 2])
 
 
 def test_concatv():
-    assert list(concatv([], [], [])) == []
+    assert not list(concatv([], [], []))
     assert (list(take(5, concatv(['a', 'b'], range(1000000000)))) ==
             ['a', 'b', 0, 1, 2])
 
@@ -288,7 +288,7 @@ def test_accumulate():
 
     start = object()
     assert list(accumulate(binop, [], start)) == [start]
-    assert list(accumulate(binop, [])) == []
+    assert not list(accumulate(binop, []))
     assert list(accumulate(add, [1, 2, 3], no_default2)) == [1, 3, 6]
 
 
@@ -302,8 +302,8 @@ def test_sliding_window():
 
 
 def test_sliding_window_of_short_iterator():
-    assert list(sliding_window(3, [1, 2])) == []
-    assert list(sliding_window(7, [1, 2])) == []
+    assert not list(sliding_window(3, [1, 2]))
+    assert not list(sliding_window(7, [1, 2]))
 
 
 def test_partition():
@@ -311,15 +311,14 @@ def test_partition():
     assert list(partition(3, range(7))) == [(0, 1, 2), (3, 4, 5)]
     assert list(partition(3, range(4), pad=-1)) == [(0, 1, 2),
                                                     (3, -1, -1)]
-    assert list(partition(2, [])) == []
+    assert not list(partition(2, []))
 
 
 def test_partition_all():
     assert list(partition_all(2, [1, 2, 3, 4])) == [(1, 2), (3, 4)]
     assert list(partition_all(3, range(5))) == [(0, 1, 2), (3, 4)]
-    assert list(partition_all(2, [])) == []
+    assert not list(partition_all(2, []))
 
-    # Regression test: https://github.com/pytoolz/toolz/issues/387
     class NoCompare(object):
         def __eq__(self, other):
             if self.__class__ == other.__class__:
@@ -458,7 +457,7 @@ def test_diff():
     assert raises(TypeError, lambda: list(diff()))
     assert raises(TypeError, lambda: list(diff([1, 2])))
     assert raises(TypeError, lambda: list(diff([1, 2], 3)))
-    assert list(diff([1, 2], (1, 2), iter([1, 2]))) == []
+    assert not list(diff([1, 2], (1, 2), iter([1, 2])))
     assert list(diff([1, 2, 3], (1, 10, 3), iter([1, 2, 10]))) == [
         (2, 10, 2), (3, 3, 10)]
     assert list(diff([1, 2], [10])) == [(1, 10)]

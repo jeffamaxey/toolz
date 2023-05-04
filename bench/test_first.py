@@ -1,6 +1,6 @@
 from toolz import first, second
 
-pairs = [(1, 2) for i in range(1000000)]
+pairs = [(1, 2) for _ in range(1000000)]
 
 
 def test_first():

@@ -1,6 +1,6 @@
 from toolz import get
 
-tuples = [(1, 2, 3) for i in range(100000)]
+tuples = [(1, 2, 3) for _ in range(100000)]
 
 
 def test_get():

@@ -71,10 +71,7 @@ class EqualityHashKey(object):
         self.item = item
 
     def __hash__(self):
-        if self.key == self._default_hashkey:
-            val = self.key
-        else:
-            val = self.key(self.item)
+        val = self.key if self.key == self._default_hashkey else self.key(self.item)
         return hash(val)
 
     def __eq__(self, other):
@@ -88,10 +85,10 @@ class EqualityHashKey(object):
         return not self.__eq__(other)
 
     def __str__(self):
-        return '=%s=' % str(self.item)
+        return f'={str(self.item)}='
 
     def __repr__(self):
-        return '=%s=' % repr(self.item)
+        return f'={repr(self.item)}='
 
 
 # See issue #293: https://github.com/pytoolz/toolz/issues/239

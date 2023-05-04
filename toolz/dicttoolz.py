@@ -10,8 +10,9 @@ __all__ = ('merge', 'merge_with', 'valmap', 'keymap', 'itemmap',
 def _get_factory(f, kwargs):
     factory = kwargs.pop('factory', dict)
     if kwargs:
-        raise TypeError("{}() got an unexpected keyword argument "
-                        "'{}'".format(f.__name__, kwargs.popitem()[0]))
+        raise TypeError(
+            f"{f.__name__}() got an unexpected keyword argument '{kwargs.popitem()[0]}'"
+        )
     return factory
 
 
@@ -291,10 +292,7 @@ def update_in(d, keys, func, default=None, factory=dict):
         inner[k] = inner = dtemp
         k = key
 
-    if k in d:
-        inner[k] = func(d[k])
-    else:
-        inner[k] = func(default)
+    inner[k] = func(d[k]) if k in d else func(default)
     return rv
 
 

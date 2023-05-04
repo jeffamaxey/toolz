@@ -128,7 +128,9 @@ class TestDict(object):
         # Handle one missing key.
         assert update_in(D({}), ["z"], str, None, **kw) == D({"z": "None"})
         assert update_in(D({}), ["z"], inc, 0, **kw) == D({"z": 1})
-        assert update_in(D({}), ["z"], lambda x: x+"ar", default="b", **kw) == D({"z": "bar"})
+        assert update_in(D({}), ["z"], lambda x: f"{x}ar", default="b", **kw) == D(
+            {"z": "bar"}
+        )
         # Same semantics as Clojure for multiple missing keys, ie. recursively
         # create nested empty dictionaries to the depth specified by the
         # keys with the innermost value set to f(default).
@@ -148,8 +150,11 @@ class TestDict(object):
         assert (merge(defaultdict(int, D({1: 2})), D({2: 3}),
                       factory=lambda: defaultdict(int)) ==
                 defaultdict(int, D({1: 2, 2: 3})))
-        assert not (merge(defaultdict(int, D({1: 2})), D({2: 3}),
-                          factory=lambda: defaultdict(int)) == {1: 2, 2: 3})
+        assert merge(
+            defaultdict(int, D({1: 2})),
+            D({2: 3}),
+            factory=lambda: defaultdict(int),
+        ) != {1: 2, 2: 3}
         assert raises(TypeError, lambda: merge(D({1: 2}), D({2: 3}), factoryy=dict))
 
 

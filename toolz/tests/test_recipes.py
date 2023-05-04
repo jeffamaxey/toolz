@@ -12,7 +12,7 @@ def test_countby():
 
 
 def test_partitionby():
-    assert list(partitionby(identity, [])) == []
+    assert not list(partitionby(identity, []))
 
     vowels = "aeiou"
     assert (list(partitionby(vowels.__contains__, "abcdefghi")) ==

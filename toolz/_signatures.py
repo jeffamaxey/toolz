@@ -12,6 +12,7 @@ modules.  More can be added as requested.  We don't guarantee full coverage.
 Everything in this module should be regarded as implementation details.
 Users should try to not use this module directly.
 """
+
 import functools
 import inspect
 import itertools
@@ -38,197 +39,133 @@ import builtins
 #   keyword_only_args: (optional)
 #       - Tuple of keyword-only argumemts.
 
-module_info = {}
+module_info = {
+    builtins: dict(
+        abs=[lambda x: None],
+        all=[lambda iterable: None],
+        anext=[lambda aiterator: None, lambda aiterator, default: None],
+        any=[lambda iterable: None],
+        apply=[
+            lambda object: None,
+            lambda object, args: None,
+            lambda object, args, kwargs: None,
+        ],
+        ascii=[lambda obj: None],
+        bin=[lambda number: None],
+        bool=[lambda x=False: None],
+        buffer=[
+            lambda object: None,
+            lambda object, offset: None,
+            lambda object, offset, size: None,
+        ],
+        bytearray=[
+            lambda: None,
+            lambda int: None,
+            lambda string, encoding='utf8', errors='strict': None,
+        ],
+        callable=[lambda obj: None],
+        chr=[lambda i: None],
+        classmethod=[lambda function: None],
+        cmp=[lambda x, y: None],
+        coerce=[lambda x, y: None],
+        complex=[lambda real=0, imag=0: None],
+        delattr=[lambda obj, name: None],
+        dict=[lambda **kwargs: None, lambda mapping, **kwargs: None],
+        dir=[lambda: None, lambda object: None],
+        divmod=[lambda x, y: None],
+        enumerate=[(0, lambda iterable, start=0: None)],
+        eval=[
+            lambda source: None,
+            lambda source, globals: None,
+            lambda source, globals, locals: None,
+        ],
+        execfile=[
+            lambda filename: None,
+            lambda filename, globals: None,
+            lambda filename, globals, locals: None,
+        ],
+        file=[(0, lambda name, mode='r', buffering=-1: None)],
+        filter=[lambda function, iterable: None],
+        float=[lambda x=0.0: None],
+        format=[lambda value: None, lambda value, format_spec: None],
+        frozenset=[lambda: None, lambda iterable: None],
+        getattr=[
+            lambda object, name: None,
+            lambda object, name, default: None,
+        ],
+        globals=[lambda: None],
+        hasattr=[lambda obj, name: None],
+        hash=[lambda obj: None],
+        hex=[lambda number: None],
+        id=[lambda obj: None],
+        input=[lambda: None, lambda prompt: None],
+        int=[lambda x=0: None, (0, lambda x, base=10: None)],
+        intern=[lambda string: None],
+        isinstance=[lambda obj, class_or_tuple: None],
+        issubclass=[lambda cls, class_or_tuple: None],
+        iter=[lambda iterable: None, lambda callable, sentinel: None],
+        len=[lambda obj: None],
+        list=[lambda: None, lambda iterable: None],
+        locals=[lambda: None],
+        long=[lambda x=0: None, (0, lambda x, base=10: None)],
+        map=[lambda func, sequence, *iterables: None],
+        memoryview=[(0, lambda object: None)],
+        next=[lambda iterator: None, lambda iterator, default: None],
+        object=[lambda: None],
+        oct=[lambda number: None],
+        ord=[lambda c: None],
+        pow=[lambda x, y: None, lambda x, y, z: None],
+        property=[lambda fget=None, fset=None, fdel=None, doc=None: None],
+        range=[
+            lambda stop: None,
+            lambda start, stop: None,
+            lambda start, stop, step: None,
+        ],
+        raw_input=[lambda: None, lambda prompt: None],
+        reduce=[
+            lambda function, sequence: None,
+            lambda function, sequence, initial: None,
+        ],
+        reload=[lambda module: None],
+        repr=[lambda obj: None],
+        reversed=[lambda sequence: None],
+        round=[(0, lambda number, ndigits=0: None)],
+        set=[lambda: None, lambda iterable: None],
+        setattr=[lambda obj, name, value: None],
+        slice=[
+            lambda stop: None,
+            lambda start, stop: None,
+            lambda start, stop, step: None,
+        ],
+        staticmethod=[lambda function: None],
+        sum=[lambda iterable: None, lambda iterable, start: None],
+        super=[lambda type: None, lambda type, obj: None],
+        tuple=[lambda: None, lambda iterable: None],
+        type=[lambda object: None, lambda name, bases, dict: None],
+        unichr=[lambda i: None],
+        unicode=[
+            lambda object: None,
+            lambda string='', encoding='utf8', errors='strict': None,
+        ],
+        vars=[lambda: None, lambda object: None],
+        xrange=[
+            lambda stop: None,
+            lambda start, stop: None,
+            lambda start, stop, step: None,
+        ],
+        zip=[lambda *iterables: None],
+        __build_class__=[
+            (2, lambda func, name, *bases, **kwds: None, ('metaclass',))
+        ],
+        __import__=[
+            (
+                0,
+                lambda name, globals=None, locals=None, fromlist=None, level=None: None,
+            )
+        ],
+    )
+}
 
-module_info[builtins] = dict(
-    abs=[
-        lambda x: None],
-    all=[
-        lambda iterable: None],
-    anext=[
-        lambda aiterator: None,
-        lambda aiterator, default: None],
-    any=[
-        lambda iterable: None],
-    apply=[
-        lambda object: None,
-        lambda object, args: None,
-        lambda object, args, kwargs: None],
-    ascii=[
-        lambda obj: None],
-    bin=[
-        lambda number: None],
-    bool=[
-        lambda x=False: None],
-    buffer=[
-        lambda object: None,
-        lambda object, offset: None,
-        lambda object, offset, size: None],
-    bytearray=[
-        lambda: None,
-        lambda int: None,
-        lambda string, encoding='utf8', errors='strict': None],
-    callable=[
-        lambda obj: None],
-    chr=[
-        lambda i: None],
-    classmethod=[
-        lambda function: None],
-    cmp=[
-        lambda x, y: None],
-    coerce=[
-        lambda x, y: None],
-    complex=[
-        lambda real=0, imag=0: None],
-    delattr=[
-        lambda obj, name: None],
-    dict=[
-        lambda **kwargs: None,
-        lambda mapping, **kwargs: None],
-    dir=[
-        lambda: None,
-        lambda object: None],
-    divmod=[
-        lambda x, y: None],
-    enumerate=[
-        (0, lambda iterable, start=0: None)],
-    eval=[
-        lambda source: None,
-        lambda source, globals: None,
-        lambda source, globals, locals: None],
-    execfile=[
-        lambda filename: None,
-        lambda filename, globals: None,
-        lambda filename, globals, locals: None],
-    file=[
-        (0, lambda name, mode='r', buffering=-1: None)],
-    filter=[
-        lambda function, iterable: None],
-    float=[
-        lambda x=0.0: None],
-    format=[
-        lambda value: None,
-        lambda value, format_spec: None],
-    frozenset=[
-        lambda: None,
-        lambda iterable: None],
-    getattr=[
-        lambda object, name: None,
-        lambda object, name, default: None],
-    globals=[
-        lambda: None],
-    hasattr=[
-        lambda obj, name: None],
-    hash=[
-        lambda obj: None],
-    hex=[
-        lambda number: None],
-    id=[
-        lambda obj: None],
-    input=[
-        lambda: None,
-        lambda prompt: None],
-    int=[
-        lambda x=0: None,
-        (0, lambda x, base=10: None)],
-    intern=[
-        lambda string: None],
-    isinstance=[
-        lambda obj, class_or_tuple: None],
-    issubclass=[
-        lambda cls, class_or_tuple: None],
-    iter=[
-        lambda iterable: None,
-        lambda callable, sentinel: None],
-    len=[
-        lambda obj: None],
-    list=[
-        lambda: None,
-        lambda iterable: None],
-    locals=[
-        lambda: None],
-    long=[
-        lambda x=0: None,
-        (0, lambda x, base=10: None)],
-    map=[
-        lambda func, sequence, *iterables: None],
-    memoryview=[
-        (0, lambda object: None)],
-    next=[
-        lambda iterator: None,
-        lambda iterator, default: None],
-    object=[
-        lambda: None],
-    oct=[
-        lambda number: None],
-    ord=[
-        lambda c: None],
-    pow=[
-        lambda x, y: None,
-        lambda x, y, z: None],
-    property=[
-        lambda fget=None, fset=None, fdel=None, doc=None: None],
-    range=[
-        lambda stop: None,
-        lambda start, stop: None,
-        lambda start, stop, step: None],
-    raw_input=[
-        lambda: None,
-        lambda prompt: None],
-    reduce=[
-        lambda function, sequence: None,
-        lambda function, sequence, initial: None],
-    reload=[
-        lambda module: None],
-    repr=[
-        lambda obj: None],
-    reversed=[
-        lambda sequence: None],
-    round=[
-        (0, lambda number, ndigits=0: None)],
-    set=[
-        lambda: None,
-        lambda iterable: None],
-    setattr=[
-        lambda obj, name, value: None],
-    slice=[
-        lambda stop: None,
-        lambda start, stop: None,
-        lambda start, stop, step: None],
-    staticmethod=[
-        lambda function: None],
-    sum=[
-        lambda iterable: None,
-        lambda iterable, start: None],
-    super=[
-        lambda type: None,
-        lambda type, obj: None],
-    tuple=[
-        lambda: None,
-        lambda iterable: None],
-    type=[
-        lambda object: None,
-        lambda name, bases, dict: None],
-    unichr=[
-        lambda i: None],
-    unicode=[
-        lambda object: None,
-        lambda string='', encoding='utf8', errors='strict': None],
-    vars=[
-        lambda: None,
-        lambda object: None],
-    xrange=[
-        lambda stop: None,
-        lambda start, stop: None,
-        lambda start, stop, step: None],
-    zip=[
-        lambda *iterables: None],
-    __build_class__=[
-        (2, lambda func, name, *bases, **kwds: None, ('metaclass',))],
-    __import__=[
-        (0, lambda name, globals=None, locals=None, fromlist=None,
-            level=None: None)],
-)
 module_info[builtins]['exec'] = [
     lambda source: None,
     lambda source, globals: None,
@@ -752,9 +689,7 @@ def _has_varargs(func):
 
 def check_keywords(sig):
     num_pos_only, func, keyword_exclude, sigspec = sig
-    if keyword_exclude:
-        return True
-    return has_keywords(func, sigspec)
+    return True if keyword_exclude else has_keywords(func, sigspec)
 
 
 def _has_keywords(func):
@@ -780,6 +715,4 @@ def _num_required_args(func):
     sigs = signatures[func]
     vals = [check_required_args(sig) for sig in sigs]
     val = vals[0]
-    if all(x == val for x in vals):
-        return val
-    return None
+    return val if all(x == val for x in vals) else None

@@ -1,7 +1,7 @@
 from toolz.curried import get
 
 
-pairs = [(1, 2) for i in range(100000)]
+pairs = [(1, 2) for _ in range(100000)]
 
 
 def test_get_curried():

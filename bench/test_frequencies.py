@@ -10,5 +10,5 @@ def test_frequencies():
 
 
 def test_frequencies_small():
-    for i in range(1000):
+    for _ in range(1000):
         frequencies(small_data)
